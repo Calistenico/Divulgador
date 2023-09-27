@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Divulgador de Rede Social</title>
+    <!-- Inclua o link para a fonte Pacifico -->
+    <link href="https://fonts.googleapis.com/css?family=Pacifico&display=swap" rel="stylesheet">
     <style>
         /* Estilos para o aplicativo */
         body {
@@ -22,8 +24,10 @@
             padding: 10px;
         }
 
+        /* Estilos para o título com a fonte Pacifico */
         header h1 {
             margin: 0;
+            font-family: 'Pacifico', cursive;
         }
 
         button {
@@ -104,42 +108,15 @@
             cursor: pointer;
         }
 
-        /* Estilos para os botões de ação */
-        .action-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-        }
-
-        .action-buttons button {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
-
-        .action-buttons button:first-child {
-            margin-right: 5px;
-        }
-
-        .action-buttons a {
-            text-decoration: none;
-        }
-
-        .action-buttons button:hover {
-            background-color: #0056b3;
-        }
-
-        /* Estilos para a carteira de pontos */
+        /* Estilos para a carteira de pontos no canto da página */
         #points-wallet {
-            width: 100%;
-            max-width: 120px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 120px;
             background-color: rgba(168, 168, 168, 0.9);
             padding: 12px;
             border-radius: 8px;
-            margin-bottom: 18px;
             text-align: center;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
@@ -241,6 +218,9 @@
     </footer>
 
     <script>
+        // Variável para armazenar os links compartilhados
+        let sharedLinksInFeed = [];
+
         // Função para adicionar conteúdo compartilhado
         function addSharedContent(content) {
             const sharedContent = document.getElementById('sharedContent');
