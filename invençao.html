@@ -237,6 +237,53 @@
     </footer>
 
     <script>
+
+        // Função para remover um link compartilhado após 2 horas
+    function removeSharedLinkAfter2Hours(link) {
+        setTimeout(function () {
+            sharedLinks.delete(link); // Remove o link da lista de links compartilhados
+            const sharedContent = document.getElementById('sharedContent');
+            const contentDivs = sharedContent.getElementsByClassName('postagem');
+            for (let i = 0; i < contentDivs.length; i++) {
+                if (contentDivs[i].dataset.link === link) {
+                    sharedContent.removeChild(contentDivs[i]); // Remove a div que contém o link
+                    break;
+                }
+            }
+        }, 2 * 60 * 60 * 1000); // 2 horas em milissegundos
+    }
+
+    // Função para adicionar conteúdo compartilhado
+    function addSharedContent(content) {
+        if (!sharedLinks.has(content)) {
+            sharedLinks.add(content); // Adiciona o link à lista de links compartilhados
+            const sharedContent = document.getElementById('sharedContent');
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'postagem';
+            contentDiv.dataset.link = content; // Armazena o link como um atributo de dados
+
+            // Botão "Acesso ao Link"
+            const openLinkButton = document.createElement('button');
+            openLinkButton.textContent = 'Acesso ao Link';
+            openLinkButton.addEventListener('click', function () {
+                window.open(content, '_blank'); // Abre o link em uma nova guia
+                // Adiciona 1 ponto ao usuário ao abrir o link
+                userPoints += 1;
+                updatePointsDisplay();
+                openLinkButton.disabled = true; // Desabilita o botão após abrir o link
+            });
+
+            contentDiv.appendChild(openLinkButton);
+            contentDiv.style.marginBottom = '10px'; // Adicione uma margem inferior de 10px entre os botões
+
+            sharedContent.appendChild(contentDiv);
+
+            // Remove o link após 2 horas
+            removeSharedLinkAfter2Hours(content);
+        }
+    }
+
+
         // Simulação de carteira de pontos para o usuário
         let userPoints = 20; // Começa com 20 pontos
         const userPointsDisplay = document.getElementById('user-points');
