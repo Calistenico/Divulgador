@@ -223,7 +223,7 @@
                 <button type="submit">Compartilhar</button>
             </form>
             <p class="copy">Cada compartilhamento custa 2 pontos.</p>
-        </section>
+
 
         <section id="shared-content-box">
             <h2>Ganhe Pontos Curtindo e Comentando Feeds, Stories e Fotos</h2>
@@ -231,7 +231,6 @@
                 <!-- Aqui serão exibidos os botões de acesso ao conteúdo compartilhado -->
             </div>
         </section>
-    </main>
 
     <footer>
         &copy; 2023 Criado com o propósito de uma divulgação orgânica de perfil de Rede Social
@@ -293,6 +292,3 @@
         // Atualiza os pontos do usuário na inicialização
         updatePointsDisplay();
     </script>
-    
-</body>
-
