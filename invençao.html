@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -271,6 +272,9 @@
                 // Adicione o link ao array de links compartilhados na seção de feed
                 sharedLinksInFeed.push(content);
                 updateSharedFeed(); // Atualize a exibição dos links compartilhados na seção de feed
+
+                // Atualiza o armazenamento local com os links compartilhados
+                updateLocalStorage();
             }
         }
 
@@ -322,7 +326,25 @@
             userPointsDisplay.textContent = `Pontos: ${userPoints}`;
         }
 
-        // Atualiza os pontos do usuário na inicialização
+        // Função para atualizar o armazenamento local com os links compartilhados
+        function updateLocalStorage() {
+            localStorage.setItem('sharedLinks', JSON.stringify(Array.from(sharedLinks)));
+        }
+
+        // Função para carregar os links compartilhados do armazenamento local
+        function loadSharedLinksFromLocalStorage() {
+            const sharedLinksJSON = localStorage.getItem('sharedLinks');
+            if (sharedLinksJSON) {
+                const sharedLinksArray = JSON.parse(sharedLinksJSON);
+                sharedLinksArray.forEach(function (link) {
+                    addSharedContent(link);
+                });
+            }
+        }
+
+        // Atualiza os pontos do usuário na inicialização e carrega links compartilhados do armazenamento local
         updatePointsDisplay();
+        loadSharedLinksFromLocalStorage();
     </script>
 </body>
+</html>
