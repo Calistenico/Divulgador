@@ -46,7 +46,7 @@
         .content-box {
             width: 100%;
             max-width: 400px;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(51, 44, 44, 0.9);
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
@@ -56,6 +56,8 @@
         .content-box h2 {
             text-align: center;
             margin-bottom: 10px;
+            background-color: rgba(51, 44, 44, 0.9);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
 
         .content-box p {
@@ -239,43 +241,33 @@
     </footer>
 
     <script>
-        // Simulação de carteira de pontos para o usuário
-        let userPoints = 20; // Começa com 20 pontos
-        const userPointsDisplay = document.getElementById('user-points');
-        const sharedLinks = new Set(); // Usado para rastrear links compartilhados
-        const sharedLinksInFeed = []; // Array para armazenar links compartilhados na seção de feed
-
         // Função para adicionar conteúdo compartilhado
         function addSharedContent(content) {
-            if (!sharedLinks.has(content)) {
-                sharedLinks.add(content); // Adiciona o link à lista de links compartilhados
-                const sharedContent = document.getElementById('sharedContent');
-                const contentDiv = document.createElement('div');
-                contentDiv.className = 'postagem';
+            const sharedContent = document.getElementById('sharedContent');
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'postagem';
 
-                // Botão "Acesso ao Link"
-                const openLinkButton = document.createElement('button');
-                openLinkButton.textContent = 'Acesso ao Link';
-                openLinkButton.addEventListener('click', function () {
-                    window.open(content, '_blank'); // Abre o link em uma nova guia
-                    // Adiciona 1 ponto ao usuário ao abrir o link
-                    userPoints += 1;
-                    updatePointsDisplay();
-                    openLinkButton.disabled = true; // Desabilita o botão após abrir o link
-                });
+            // Botão "Acesso ao Link"
+            const openLinkButton = document.createElement('button');
+            openLinkButton.textContent = 'Acesso ao Link';
+            openLinkButton.addEventListener('click', function () {
+                window.open(content, '_blank'); // Abre o link em uma nova guia
+                // Adiciona 1 ponto ao usuário ao abrir o link
+                userPoints += 1;
+                updatePointsDisplay();
+                openLinkButton.disabled = true; // Desabilita o botão após abrir o link
+            });
 
-                contentDiv.appendChild(openLinkButton);
-                contentDiv.style.marginBottom = '10px'; // Adicione uma margem inferior de 10px entre os botões
+            contentDiv.appendChild(openLinkButton);
+            contentDiv.style.marginBottom = '10px'; // Adicione uma margem inferior de 10px entre os botões
 
-                sharedContent.appendChild(contentDiv);
+            sharedContent.appendChild(contentDiv);
 
-                // Adicione o link ao array de links compartilhados na seção de feed
-                sharedLinksInFeed.push(content);
-                updateSharedFeed(); // Atualize a exibição dos links compartilhados na seção de feed
+            // Armazena o link compartilhado no armazenamento local
+            storeSharedLink(content);
 
-                // Atualiza o armazenamento local com os links compartilhados
-                updateLocalStorage();
-            }
+            // Atualiza a exibição dos links compartilhados na seção de feed
+            updateSharedFeed();
         }
 
         // Função para atualizar a exibição dos links compartilhados na seção de feed
@@ -305,46 +297,57 @@
             });
         }
 
+        // Função para armazenar o link compartilhado no armazenamento local
+        function storeSharedLink(link) {
+            const sharedLinks = getStoredSharedLinks();
+            sharedLinks.push(link);
+
+            // Verifica se o limite de armazenamento foi atingido e remove os links mais antigos se necessário
+            const maxStorageSize = 10; // Defina o limite de armazenamento
+            if (sharedLinks.length > maxStorageSize) {
+                sharedLinks.splice(0, sharedLinks.length - maxStorageSize);
+            }
+
+            localStorage.setItem('sharedLinks', JSON.stringify(sharedLinks));
+        }
+
+        // Função para obter os links compartilhados armazenados
+        function getStoredSharedLinks() {
+            const sharedLinksJSON = localStorage.getItem('sharedLinks');
+            return sharedLinksJSON ? JSON.parse(sharedLinksJSON) : [];
+        }
+
+        // Função para atualizar a exibição de pontos do usuário
+        function updatePointsDisplay() {
+            const userPointsDisplay = document.getElementById('user-points');
+            userPointsDisplay.textContent = `Pontos: ${userPoints}`;
+        }
+
+        // Função para carregar os links compartilhados do armazenamento local
+        function loadSharedLinksFromLocalStorage() {
+            sharedLinksInFeed = getStoredSharedLinks();
+            updateSharedFeed(); // Atualize a exibição dos links compartilhados na seção de feed
+        }
+
+        // Simulação de carteira de pontos para o usuário
+        let userPoints = 20; // Começa com 20 pontos
+
+        // Carrega os links compartilhados do armazenamento local
+        loadSharedLinksFromLocalStorage();
+        
         // Função para processar o formulário de compartilhamento de perfil
         const postForm = document.getElementById('postForm');
         postForm.addEventListener('submit', function (e) {
             e.preventDefault(); // Impede o envio padrão do formulário
 
             const linkPostagem = document.getElementById('linkPostagem').value;
-            if (linkPostagem && !sharedLinks.has(linkPostagem)) {
+            if (linkPostagem) {
                 addSharedContent(linkPostagem);
                 userPoints -= 2; // Remove 2 pontos ao compartilhar
                 updatePointsDisplay(); // Atualiza a exibição de pontos
                 document.getElementById('linkPostagem').value = ''; // Limpa o campo após o compartilhamento
-            } else if (sharedLinks.has(linkPostagem)) {
-                alert('Este link já foi compartilhado.');
             }
         });
-
-        // Função para atualizar a exibição de pontos do usuário
-        function updatePointsDisplay() {
-            userPointsDisplay.textContent = `Pontos: ${userPoints}`;
-        }
-
-        // Função para atualizar o armazenamento local com os links compartilhados
-        function updateLocalStorage() {
-            localStorage.setItem('sharedLinks', JSON.stringify(Array.from(sharedLinks)));
-        }
-
-        // Função para carregar os links compartilhados do armazenamento local
-        function loadSharedLinksFromLocalStorage() {
-            const sharedLinksJSON = localStorage.getItem('sharedLinks');
-            if (sharedLinksJSON) {
-                const sharedLinksArray = JSON.parse(sharedLinksJSON);
-                sharedLinksArray.forEach(function (link) {
-                    addSharedContent(link);
-                });
-            }
-        }
-
-        // Atualiza os pontos do usuário na inicialização e carrega links compartilhados do armazenamento local
-        updatePointsDisplay();
-        loadSharedLinksFromLocalStorage();
     </script>
 </body>
 </html>
