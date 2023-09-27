@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -232,10 +231,6 @@
             openLinkButton.textContent = 'Acesso ao Link';
             openLinkButton.addEventListener('click', function () {
                 window.open(content, '_blank'); // Abre o link em uma nova guia
-                // Adiciona 1 ponto ao usuário ao abrir o link
-                userPoints += 1;
-                updatePointsDisplay();
-                openLinkButton.disabled = true; // Desabilita o botão após abrir o link
             });
 
             contentDiv.appendChild(openLinkButton);
@@ -264,10 +259,6 @@
                 openLinkButton.textContent = 'Acesso ao Link';
                 openLinkButton.addEventListener('click', function () {
                     window.open(link, '_blank'); // Abre o link em uma nova guia
-                    // Adiciona 1 ponto ao usuário ao abrir o link
-                    userPoints += 1;
-                    updatePointsDisplay();
-                    openLinkButton.disabled = true; // Desabilita o botão após abrir o link
                 });
 
                 feedItem.appendChild(openLinkButton);
@@ -330,4 +321,3 @@
         });
     </script>
 </body>
-</html>
