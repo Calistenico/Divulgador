@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Divulgador de Rede Social</title>
+    <!-- Inclua o link para a fonte Pacifico -->
     <link href="https://fonts.googleapis.com/css?family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-auth.js"></script>
     <style>
         /* Estilos para o aplicativo */
         body {
@@ -148,66 +149,25 @@
         }
 
         /* Estilos para os botões de acesso ao conteúdo compartilhado */
-        .link-button {
+        .postagem {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .postagem button {
             background-color: #007BFF;
             color: white;
             border: none;
             border-radius: 5px;
             padding: 5px 10px;
             cursor: pointer;
-            margin: 5px;
         }
 
-        .link-button:disabled {
+        .postagem button:disabled {
             background-color: #ccc;
             cursor: not-allowed;
-        }
-
-        /* Estilos para o formulário de login */
-        #loginForm {
-            width: 100%;
-            max-width: 400px;
-            background-color: rgba(94, 89, 89, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-
-        #loginForm label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        #loginForm input[type="text"], #loginForm input[type="password"] {
-            width: 100%;
-            padding: 5px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        #loginForm button[type="submit"] {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
-
-        #loginForm p {
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        /* Estilos para os botões de link com imagem */
-        .link-button img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 0 auto 5px;
         }
     </style>
 </head>
@@ -215,30 +175,14 @@
     
     <header>
         <h1>Divulgador De Rede Social</h1>
-        <div id="user-info">
-            <span id="user-email"></span>
-            <button id="logoutButton">Sair</button>
-        </div>
+        <button id="loginButton">Entrar com o Google</button>
     </header>
     
     <main>
         <section id="points-wallet">
             <h2>Carteira de Pontos</h2>
-            <p id="user-points">Pontos: 10</p>
+            <p id="user-points">Pontos: 20</p>
         </section>
-
-        <section id="loginForm" class="content-box">
-            <h2>Login</h2>
-            <form id="loginUserForm">
-                <label for="email">Email:</label>
-                <input type="text" id="loginEmail" required>
-                <label for="password">Senha:</label>
-                <input type="password" id="loginPassword" required>
-                <button type="submit">Entrar</button>
-                <p>Ainda não tem uma conta? <a href="#" id="createAccountLink">Crie uma conta</a></p>
-            </form>
-        </section>
-
         <section id="profile-link-box" class="content-box">
             <p class="copy">
                Aqui está o melhor: ganhe pontos a cada ação! 😲<br>
@@ -267,8 +211,8 @@
 
         <section id="shared-content-box">
             <h2>Ganhe Pontos Curtindo e Comentando Feeds, Stories e Fotos</h2>
-            <div id="sharedContent" class="shared-links">
-                <!-- Aqui serão exibidos os links compartilhados como botões -->
+            <div id="sharedContent">
+                <!-- Aqui serão exibidos os links compartilhados -->
             </div>
         </section>
     </main>
@@ -276,6 +220,7 @@
     <footer>
         &copy; 2023 Criado com o propósito de uma divulgação orgânica de perfil de Rede Social
     </footer>
+
 
     <script>
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -293,53 +238,128 @@
         // Inicialize o Firebase
         firebase.initializeApp(firebaseConfig);
 
-        // Referência para o banco de dados
-        const database = firebase.database();
+        // Referências ao banco de dados e autenticação
+        var database = firebase.database();
+        var auth = firebase.auth();
 
-        function updateSharedFeed() {
-            var sharedContentElement = document.getElementById('sharedContent');
+        // Variável para armazenar a quantidade de pontos do usuário
+        var userPoints = 20; // Defina a carteira com 20 pontos iniciais
 
-            // Obtém os links compartilhados do banco de dados
+        // Atualize a exibição da carteira de pontos
+        function updatePointsDisplay() {
+            var userPointsElement = document.getElementById('user-points');
+            userPointsElement.textContent = 'Pontos: ' + userPoints;
+        }
+
+        // Deduza 2 pontos da carteira quando um link for compartilhado
+        function deductPoints() {
+            userPoints -= 2; // Deduz 2 pontos da carteira
+            updatePointsDisplay(); // Atualiza a exibição da carteira de pontos
+        }
+
+        // Função para verificar se um link já foi compartilhado
+        function isLinkShared(link) {
             var sharedLinksRef = database.ref('sharedLinks');
-            sharedLinksRef.once('value').then(function(snapshot) {
+            return sharedLinksRef.once('value').then(function(snapshot) {
                 var links = snapshot.val();
                 if (links) {
-                    sharedContentElement.innerHTML = ''; // Limpa o conteúdo existente
+                    return Object.values(links).includes(link);
+                }
+                return false;
+            });
+        }
 
-                    var linksArray = Object.values(links);
-
-                    // Divide os links em grupos de 8
-                    for (var i = 0; i < linksArray.length; i += 8) {
-                        var linkGroup = linksArray.slice(i, i + 8);
-                        var linkGroupDiv = document.createElement('div');
-
-                        // Cria botões para os links no grupo
-                        linkGroup.forEach(function(linkObj) {
-                            var linkButton = document.createElement('button');
-                            var linkText = linkObj.link;
-                            var imageUrl = linkObj.imageUrl; // URL da imagem
-                            var imgElement = document.createElement('img'); // Elemento de imagem
-
-                            if (imageUrl) {
-                                imgElement.src = imageUrl; // Define a fonte da imagem
-                                imgElement.alt = linkText; // Adicione um atributo alt para acessibilidade
-                                linkButton.appendChild(imgElement); // Adicione a imagem ao botão
-                            } else {
-                                linkButton.textContent = linkText; // Se não houver imagem, use o texto do link
-                            }
-
-                            linkButton.className = 'link-button';
-                            linkGroupDiv.appendChild(linkButton);
-                        });
-
-                        sharedContentElement.appendChild(linkGroupDiv);
-                    }
+        // Função para adicionar conteúdo compartilhado
+        function addSharedContent(content) {
+            // Verifica se o link já foi compartilhado
+            isLinkShared(content).then(function(alreadyShared) {
+                if (!alreadyShared) {
+                    // Gere uma chave única para cada link compartilhado
+                    var newContentKey = database.ref('sharedLinks').push().key;
+                    var updates = {};
+                    updates['/sharedLinks/' + newContentKey] = content;
+                    database.ref().update(updates);
+                    deductPoints(); // Deduz 2 pontos da carteira
+                } else {
+                    alert('Este link já foi compartilhado anteriormente.');
                 }
             });
         }
 
-        // Carrega os links compartilhados ao carregar a página
+        // Função para atualizar a exibição dos links compartilhados
+        function updateSharedFeed() {
+            var sharedContent = document.getElementById('sharedContent');
+            sharedContent.innerHTML = ''; // Limpa o conteúdo atual
+
+            // Consulta os links compartilhados no banco de dados
+            var sharedLinksRef = database.ref('sharedLinks');
+            sharedLinksRef.on('child_added', function (data) {
+                var link = data.val();
+                var feedItem = document.createElement('div');
+                feedItem.className = 'postagem';
+
+                // Botão "Acesso ao Link"
+                var openLinkButton = document.createElement('button');
+                openLinkButton.textContent = 'Acesso ao Link';
+                openLinkButton.addEventListener('click', function () {
+                    window.open(link, '_blank'); // Abre o link em uma nova guia
+                });
+
+                feedItem.appendChild(openLinkButton);
+                feedItem.style.marginBottom = '10px'; // Adicione uma margem inferior de 10px entre os botões
+
+                sharedContent.appendChild(feedItem);
+            });
+        }
+
+        // Função para processar o formulário de compartilhamento de perfil
+        var postForm = document.getElementById('postForm');
+        postForm.addEventListener('submit', function (e) {
+            e.preventDefault(); // Impede o envio padrão do formulário
+
+            var linkPostagem = document.getElementById('linkPostagem').value;
+            if (linkPostagem && userPoints >= 2) { // Verifica se o usuário tem pelo menos 2 pontos para compartilhar
+                addSharedContent(linkPostagem).then(function () {
+                    document.getElementById('linkPostagem').value = ''; // Limpa o campo após o compartilhamento
+                });
+            } else {
+                alert('Você não tem pontos suficientes para compartilhar ou o link já foi compartilhado.');
+            }
+        });
+
+        // Atualize o estado do botão de compartilhamento com base nos pontos disponíveis
+        function updateShareButtonState() {
+            var linkPostagem = document.getElementById('linkPostagem');
+            var shareButton = document.querySelector('#postForm button[type="submit"]');
+            
+            if (userPoints < 2 || !linkPostagem.value) {
+                shareButton.disabled = true;
+            } else {
+                shareButton.disabled = false;
+            }
+        }
+
+        // Inicialize a atualização dos links compartilhados
         updateSharedFeed();
+
+        // Atualize a exibição dos pontos e o estado do botão de compartilhamento
+        updatePointsDisplay();
+        updateShareButtonState();
+
+        // Adicione um ouvinte de evento para o botão de login
+        var loginButton = document.getElementById('loginButton');
+        loginButton.addEventListener('click', function() {
+            // Autenticação com o Google
+            var provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then(function(result) {
+                // O usuário fez login com sucesso
+                var user = result.user;
+                console.log('Usuário logado:', user);
+            }).catch(function(error) {
+                // Ocorreu um erro durante o login
+                console.error('Erro de login:', error);
+            });
+        });
     </script>
 </body>
 </html>
