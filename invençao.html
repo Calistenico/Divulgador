@@ -221,17 +221,17 @@
     </footer>
 
     <script>
-         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-         const firebaseConfig = {
-          apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
-          authDomain: "divulgador-c580f.firebaseapp.com",
-          databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
-          projectId: "divulgador-c580f",
-          storageBucket: "divulgador-c580f.appspot.com",
-          messagingSenderId: "633655897119",
-          appId: "1:633655897119:web:01af240d759bec0e18b92a",
-          measurementId: "G-5K9YGDBFNK"
-         };
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+         apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
+         authDomain: "divulgador-c580f.firebaseapp.com",
+         databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
+         projectId: "divulgador-c580f",
+         storageBucket: "divulgador-c580f.appspot.com",
+         messagingSenderId: "633655897119",
+         appId: "1:633655897119:web:01af240d759bec0e18b92a",
+         measurementId: "G-5K9YGDBFNK"
+        };
 
         // Inicialize o Firebase
         const app = firebase.initializeApp(firebaseConfig);
