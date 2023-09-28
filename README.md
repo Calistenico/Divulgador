@@ -180,7 +180,7 @@
         </section>
         <section id="profile-link-box" class="content-box">
             <p class="copy">
-               Mas aqui está o melhor: ganhe pontos a cada ação! 😲<br>
+               Aqui está o melhor: ganhe pontos a cada ação! 😲<br>
                 1 ponto por cada curtida 💖<br>
                 1 ponto por cada comentário 🗨️<br>
                 E o que você pode fazer com esses pontos? 🤔<br>
@@ -207,7 +207,7 @@
         <section id="shared-content-box">
             <h2>Ganhe Pontos Curtindo e Comentando Feeds, Stories e Fotos</h2>
             <div id="sharedContent">
-                <!-- Aqui serão exibidos os botões de acesso ao conteúdo compartilhado -->
+                <!-- Aqui serão exibidos os links compartilhados -->
             </div>
         </section>
     </main>
@@ -222,33 +222,14 @@
 
         // Função para adicionar conteúdo compartilhado
         function addSharedContent(content) {
-            const sharedContent = document.getElementById('sharedContent');
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'postagem';
-
-            // Botão "Acesso ao Link"
-            const openLinkButton = document.createElement('button');
-            openLinkButton.textContent = 'Acesso ao Link';
-            openLinkButton.addEventListener('click', function () {
-                window.open(content, '_blank'); // Abre o link em uma nova guia
-            });
-
-            contentDiv.appendChild(openLinkButton);
-            contentDiv.style.marginBottom = '10px'; // Adicione uma margem inferior de 10px entre os botões
-
-            sharedContent.appendChild(contentDiv);
-
-            // Armazena o link compartilhado no armazenamento local
-            storeSharedLink(content);
-
-            // Atualiza a exibição dos links compartilhados na seção de feed
-            updateSharedFeed();
+            sharedLinksInFeed.push(content);
+            updateSharedFeed(); // Atualiza a exibição dos links compartilhados
         }
 
-        // Função para atualizar a exibição dos links compartilhados na seção de feed
+        // Função para atualizar a exibição dos links compartilhados
         function updateSharedFeed() {
-            const sharedFeed = document.getElementById('sharedContent');
-            sharedFeed.innerHTML = ''; // Limpa o conteúdo atual
+            const sharedContent = document.getElementById('sharedContent');
+            sharedContent.innerHTML = ''; // Limpa o conteúdo atual
 
             sharedLinksInFeed.forEach(function (link) {
                 const feedItem = document.createElement('div');
@@ -264,48 +245,10 @@
                 feedItem.appendChild(openLinkButton);
                 feedItem.style.marginBottom = '10px'; // Adicione uma margem inferior de 10px entre os botões
 
-                sharedFeed.appendChild(feedItem);
+                sharedContent.appendChild(feedItem);
             });
         }
 
-        // Função para armazenar o link compartilhado no armazenamento local
-        function storeSharedLink(link) {
-            const sharedLinks = getStoredSharedLinks();
-            sharedLinks.push(link);
-
-            // Verifica se o limite de armazenamento foi atingido e remove os links mais antigos se necessário
-            const maxStorageSize = 10; // Defina o limite de armazenamento
-            if (sharedLinks.length > maxStorageSize) {
-                sharedLinks.splice(0, sharedLinks.length - maxStorageSize);
-            }
-
-            localStorage.setItem('sharedLinks', JSON.stringify(sharedLinks));
-        }
-
-        // Função para obter os links compartilhados armazenados
-        function getStoredSharedLinks() {
-            const sharedLinksJSON = localStorage.getItem('sharedLinks');
-            return sharedLinksJSON ? JSON.parse(sharedLinksJSON) : [];
-        }
-
-        // Função para atualizar a exibição de pontos do usuário
-        function updatePointsDisplay() {
-            const userPointsDisplay = document.getElementById('user-points');
-            userPointsDisplay.textContent = `Pontos: ${userPoints}`;
-        }
-
-        // Função para carregar os links compartilhados do armazenamento local
-        function loadSharedLinksFromLocalStorage() {
-            sharedLinksInFeed = getStoredSharedLinks();
-            updateSharedFeed(); // Atualize a exibição dos links compartilhados na seção de feed
-        }
-
-        // Simulação de carteira de pontos para o usuário
-        let userPoints = 20; // Começa com 20 pontos
-
-        // Carrega os links compartilhados do armazenamento local
-        loadSharedLinksFromLocalStorage();
-        
         // Função para processar o formulário de compartilhamento de perfil
         const postForm = document.getElementById('postForm');
         postForm.addEventListener('submit', function (e) {
@@ -314,8 +257,6 @@
             const linkPostagem = document.getElementById('linkPostagem').value;
             if (linkPostagem) {
                 addSharedContent(linkPostagem);
-                userPoints -= 2; // Remove 2 pontos ao compartilhar
-                updatePointsDisplay(); // Atualiza a exibição de pontos
                 document.getElementById('linkPostagem').value = ''; // Limpa o campo após o compartilhamento
             }
         });
