@@ -174,7 +174,8 @@
     
     <header>
         <h1>Divulgador De Rede Social</h1>
-        <button id="loginButton">Entrar com o Google</button>
+        <button id="loginButton" onclick="loginWithGoogle()">Entrar com o Google</button>
+
     </header>
     
     <main>
@@ -379,5 +380,18 @@
                 console.error('Erro de login:', error);
             });
         });
+
+        function loginWithGoogle() {
+            // Abra uma nova janela para o processo de login do Google
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then(function(result) {
+                // O usuário fez login com sucesso, você pode adicionar lógica adicional aqui
+                const user = result.user;
+                console.log('Login bem-sucedido:', user);
+            }).catch(function(error) {
+                // Tratar erros de login aqui
+                console.error('Erro de login:', error);
+            });
+        }
     </script>
 </body>
