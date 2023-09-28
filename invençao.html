@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -490,15 +491,48 @@
     <script>
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_DOMÍNIO.firebaseapp.com",
-            databaseURL: "https://SEU_DOMÍNIO.firebaseio.com",
-            projectId: "SEU_PROJETO_ID",
-            storageBucket: "SEU_DOMÍNIO.appspot.com",
-            messagingSenderId: "SEU_SENDER_ID",
-            appId: "SEU_APP_ID",
-            measurementId: "SEU_MEASUREMENT_ID"
+          apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
+          authDomain: "divulgador-c580f.firebaseapp.com",
+          databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
+          projectId: "divulgador-c580f",
+          storageBucket: "divulgador-c580f.appspot.com",
+          messagingSenderId: "633655897119",
+          appId: "1:633655897119:web:01af240d759bec0e18b92a",
+          measurementId: "G-5K9YGDBFNK"
         };
+
+        // Inicialize o Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ...
+
+        // Função para processar o formulário de entrada
+        const entryForm = document.getElementById('entryForm');
+        entryForm.addEventListener('submit', function (e) {
+            e.preventDefault(); // Impede o envio padrão do formulário
+        
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('email').value;
+        
+            // Verifica se o nome e o email foram fornecidos
+            if (nome && email) {
+                // Adicione o nome e o email do usuário ao Firestore
+                db.collection("usuarios").add({
+                    nome: nome,
+                    email: email,
+                }).then(function (docRef) {
+                    console.log("Usuário registrado com ID: ", docRef.id);
+                    // Redirecione o usuário para a página principal após o registro
+                    window.location.href = "invençao.html"; // Substitua "index.html" pelo nome do arquivo da sua página principal
+                }).catch(function (error) {
+                    console.error("Erro ao registrar usuário: ", error);
+                });
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        });
+
 
         // Inicialize o Firebase
         const app = firebase.initializeApp(firebaseConfig);
@@ -534,38 +568,3 @@
     </script>
 </body>
 </html>
-
-
-        // Inicialize o Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // ...
-
-        // Função para processar o formulário de entrada
-        const entryForm = document.getElementById('entryForm');
-        entryForm.addEventListener('submit', function (e) {
-            e.preventDefault(); // Impede o envio padrão do formulário
-        
-            const nome = document.getElementById('nome').value;
-            const email = document.getElementById('email').value;
-        
-            // Verifica se o nome e o email foram fornecidos
-            if (nome && email) {
-                // Adicione o nome e o email do usuário ao Firestore
-                db.collection("usuarios").add({
-                    nome: nome,
-                    email: email,
-                }).then(function (docRef) {
-                    console.log("Usuário registrado com ID: ", docRef.id);
-                    // Redirecione o usuário para a página principal após o registro
-                    window.location.href = "invençao.html"; // Substitua "index.html" pelo nome do arquivo da sua página principal
-                }).catch(function (error) {
-                    console.error("Erro ao registrar usuário: ", error);
-                });
-            } else {
-                alert('Por favor, preencha todos os campos.');
-            }
-        });
-    </script>
-</body>
