@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -219,54 +220,49 @@
         &copy; 2023 Criado com o propósito de uma divulgação orgânica de perfil de Rede Social
     </footer>
 
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-analytics.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-      
-        // Your web app's Firebase configuration
+    <script>
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        const firebaseConfig = {
-          apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
-          authDomain: "divulgador-c580f.firebaseapp.com",
-          databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
-          projectId: "divulgador-c580f",
-          storageBucket: "divulgador-c580f.appspot.com",
-          messagingSenderId: "633655897119",
-          appId: "1:633655897119:web:01af240d759bec0e18b92a",
-          measurementId: "G-5K9YGDBFNK"
-        };
-      
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-   
+     const firebaseConfig = {
+     apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
+     authDomain: "divulgador-c580f.firebaseapp.com",
+     databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
+     projectId: "divulgador-c580f",
+     storageBucket: "divulgador-c580f.appspot.com",
+     messagingSenderId: "633655897119",
+     appId: "1:633655897119:web:01af240d759bec0e18b92a",
+     measurementId: "G-5K9YGDBFNK"
+     };
+        
+
+        // Inicialize o Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Referência ao banco de dados
+        var database = firebase.database();
 
         // Função para adicionar conteúdo compartilhado
         function addSharedContent(content) {
             // Gere uma chave única para cada link compartilhado
-            const newContentKey = database.ref('sharedLinks').push().key;
-            const updates = {};
+            var newContentKey = database.ref('sharedLinks').push().key;
+            var updates = {};
             updates['/sharedLinks/' + newContentKey] = content;
             return database.ref().update(updates);
         }
 
         // Função para atualizar a exibição dos links compartilhados
         function updateSharedFeed() {
-            const sharedContent = document.getElementById('sharedContent');
+            var sharedContent = document.getElementById('sharedContent');
             sharedContent.innerHTML = ''; // Limpa o conteúdo atual
 
             // Consulta os links compartilhados no banco de dados
-            const sharedLinksRef = database.ref('sharedLinks');
+            var sharedLinksRef = database.ref('sharedLinks');
             sharedLinksRef.on('child_added', function (data) {
-                const link = data.val();
-                const feedItem = document.createElement('div');
+                var link = data.val();
+                var feedItem = document.createElement('div');
                 feedItem.className = 'postagem';
 
                 // Botão "Acesso ao Link"
-                const openLinkButton = document.createElement('button');
+                var openLinkButton = document.createElement('button');
                 openLinkButton.textContent = 'Acesso ao Link';
                 openLinkButton.addEventListener('click', function () {
                     window.open(link, '_blank'); // Abre o link em uma nova guia
@@ -280,11 +276,11 @@
         }
 
         // Função para processar o formulário de compartilhamento de perfil
-        const postForm = document.getElementById('postForm');
+        var postForm = document.getElementById('postForm');
         postForm.addEventListener('submit', function (e) {
             e.preventDefault(); // Impede o envio padrão do formulário
 
-            const linkPostagem = document.getElementById('linkPostagem').value;
+            var linkPostagem = document.getElementById('linkPostagem').value;
             if (linkPostagem) {
                 addSharedContent(linkPostagem).then(function () {
                     document.getElementById('linkPostagem').value = ''; // Limpa o campo após o compartilhamento
@@ -296,4 +292,4 @@
         updateSharedFeed();
     </script>
 </body>
-
+</html>
