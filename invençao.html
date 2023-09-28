@@ -1,12 +1,14 @@
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Divulgador De Rede Social</title>
+    <title>Divulgador de Rede Social</title>
     <!-- Inclua o link para a fonte Pacifico -->
     <link href="https://fonts.googleapis.com/css?family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-auth.js"></script>
     <style>
         /* Estilos para o aplicativo */
         body {
@@ -167,18 +169,51 @@
             background-color: #ccc;
             cursor: not-allowed;
         }
+
+        /* Estilos para o mural com os 1º, 2º e 3º lugares */
+        #top-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .top-link {
+            flex: 1;
+            background-color: #f7f7f7;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .top-link h2 {
+            margin: 0;
+        }
+
+        .gold {
+            background-color: gold; /* 1º lugar - cor dourada */
+        }
+
+        .silver {
+            background-color: silver; /* 2º lugar - cor prata */
+        }
+
+        .bronze {
+            background-color: #cd7f32; /* 3º lugar - cor bronze */
+        }
+
+        .top-link-url {
+            text-decoration: none;
+            color: #333;
+        }
     </style>
 </head>
 <body>
     
-    <header>
-        <h1>Divulgador De Rede Social</h1>
-    </header>
-    
+  
     <main>
         <section id="points-wallet">
             <h2>Carteira de Pontos</h2>
-            <p id="user-points">Pontos: 20</p>
+            <p id="user-points">Pontos: 10</p>
         </section>
         <section id="profile-link-box" class="content-box">
             <p class="copy">
@@ -195,6 +230,20 @@
                 <br>
                 #Compartilhar. #Curtir. #Comentar. #Crescer. 📈💫
             </p>
+            <section id="top-links">
+                <div class="top-link gold">
+                    <h2>1º Lugar</h2>
+                    <a href="#" class="top-link-url">Link 1</a>
+                </div>
+                <div class="top-link silver">
+                    <h2>2º Lugar</h2>
+                    <a href="#" class="top-link-url">Link 2</a>
+                </div>
+                <div class="top-link bronze">
+                    <h2>3º Lugar</h2>
+                    <a href="#" class="top-link-url">Link 3</a>
+                </div>
+            </section>
             
             <h2>Compartilhe seus Feeds, Stories e Fotos</h2>
             <p>Divulgue seu perfil organicamente com potencial de tráfego pago.</p>
@@ -212,134 +261,96 @@
                 <!-- Aqui serão exibidos os links compartilhados -->
             </div>
         </section>
+        
     </main>
 
     <footer>
         &copy; 2023 Criado com o propósito de uma divulgação orgânica de perfil de Rede Social
     </footer>
 
-
+    <!-- Adicione este código JavaScript abaixo da seção <script> existente em seu código -->
     <script>
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-      const firebaseConfig = {
-      apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
-      authDomain: "divulgador-c580f.firebaseapp.com",
-      databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
-      projectId: "divulgador-c580f",
-      storageBucket: "divulgador-c580f.appspot.com",
-      messagingSenderId: "633655897119",
-      appId: "1:633655897119:web:01af240d759bec0e18b92a",
-      measurementId: "G-5K9YGDBFNK"
-        };
-
-        // Inicialize o Firebase
-        firebase.initializeApp(firebaseConfig);
-
-        // Referência ao banco de dados
-        var database = firebase.database();
-
-        // Variável para armazenar a quantidade de pontos do usuário
-        var userPoints = 20; // Defina a carteira com 20 pontos iniciais
-
-        // Atualize a exibição da carteira de pontos
-        function updatePointsDisplay() {
-            var userPointsElement = document.getElementById('user-points');
-            userPointsElement.textContent = 'Pontos: ' + userPoints;
-        }
-
-        // Deduza 2 pontos da carteira quando um link for compartilhado
-        function deductPoints() {
-            userPoints -= 2; // Deduz 2 pontos da carteira
-            updatePointsDisplay(); // Atualiza a exibição da carteira de pontos
-        }
-
-        // Função para verificar se um link já foi compartilhado
-        function isLinkShared(link) {
-            var sharedLinksRef = database.ref('sharedLinks');
-            return sharedLinksRef.once('value').then(function(snapshot) {
-                var links = snapshot.val();
-                if (links) {
-                    return Object.values(links).includes(link);
-                }
-                return false;
-            });
-        }
-
-        // Função para adicionar conteúdo compartilhado
-        function addSharedContent(content) {
-            // Verifica se o link já foi compartilhado
-            isLinkShared(content).then(function(alreadyShared) {
-                if (!alreadyShared) {
-                    // Gere uma chave única para cada link compartilhado
-                    var newContentKey = database.ref('sharedLinks').push().key;
-                    var updates = {};
-                    updates['/sharedLinks/' + newContentKey] = content;
-                    database.ref().update(updates);
-                    deductPoints(); // Deduz 2 pontos da carteira
-                } else {
-                    alert('Este link já foi compartilhado anteriormente.');
-                }
-            });
-        }
-
-        // Função para atualizar a exibição dos links compartilhados
-        function updateSharedFeed() {
-            var sharedContent = document.getElementById('sharedContent');
-            sharedContent.innerHTML = ''; // Limpa o conteúdo atual
-
-            // Consulta os links compartilhados no banco de dados
-            var sharedLinksRef = database.ref('sharedLinks');
-            sharedLinksRef.on('child_added', function (data) {
-                var link = data.val();
-                var feedItem = document.createElement('div');
-                feedItem.className = 'postagem';
-
-                // Botão "Acesso ao Link"
-                var openLinkButton = document.createElement('button');
-                openLinkButton.textContent = 'Acesso ao Link';
-                openLinkButton.addEventListener('click', function () {
-                    window.open(link, '_blank'); // Abre o link em uma nova guia
+        // ...
+    
+        // Função para compartilhar um link
+        function compartilharLink(event) {
+            event.preventDefault(); // Evita o comportamento padrão de envio do formulário
+            const linkPostagem = document.getElementById("linkPostagem").value;
+    
+            if (linkPostagem) {
+                const userId = firebase.auth().currentUser.uid; // Supondo que você tenha configurado a autenticação de usuário
+    
+                // Adicionar o link compartilhado ao banco de dados
+                const novoLinkRef = database.ref("links").push();
+                novoLinkRef.set({
+                    userId: userId,
+                    link: linkPostagem,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    curtidas: 0, // Inicialmente, o link não tem curtidas
                 });
-
-                feedItem.appendChild(openLinkButton);
-                feedItem.style.marginBottom = '10px'; // Adicione uma margem inferior de 10px entre os botões
-
-                sharedContent.appendChild(feedItem);
-            });
-        }
-
-        // Função para processar o formulário de compartilhamento de perfil
-        var postForm = document.getElementById('postForm');
-        postForm.addEventListener('submit', function (e) {
-            e.preventDefault(); // Impede o envio padrão do formulário
-
-            var linkPostagem = document.getElementById('linkPostagem').value;
-            if (linkPostagem && userPoints >= 2) { // Verifica se o usuário tem pelo menos 2 pontos para compartilhar
-                addSharedContent(linkPostagem).then(function () {
-                    document.getElementById('linkPostagem').value = ''; // Limpa o campo após o compartilhamento
+    
+                document.getElementById("linkPostagem").value = "";
+    
+                // Verifica se atingiu 100 links compartilhados
+                database.ref("links").once("value").then((snapshot) => {
+                    const numLinks = snapshot.numChildren();
+    
+                    if (numLinks >= 100) {
+                        // Quando atingir 100 links, classifique e mova os mais curtidos
+                        classificarEMoverLinksMaisCurtidos();
+                    }
                 });
-            } else {
-                alert('Você não tem pontos suficientes para compartilhar ou o link já foi compartilhado.');
-            }
-        });
-
-        // Atualize o estado do botão de compartilhamento com base nos pontos disponíveis
-        function updateShareButtonState() {
-            var linkPostagem = document.getElementById('linkPostagem');
-            var shareButton = document.querySelector('#postForm button[type="submit"]');
-            
-            if (userPoints < 2 || !linkPostagem.value) {
-                shareButton.disabled = true;
-            } else {
-                shareButton.disabled = false;
             }
         }
+        // Evitar que o formulário recarregue a página ao ser enviado
+document.getElementById("postForm").addEventListener("submit", function (event) {
+    event.preventDefault(); // Evita a submissão padrão do formulário
+    compartilharLink(event);
+});
 
-        // Inicialize a atualização dos links compartilhados
-        updateSharedFeed();
-
-        // Atualize a exibição dos pontos e o estado do botão de compartilhamento
-        updatePointsDisplay();
-        updateShareButtonState();
+    
+        // Função para classificar e mover os links mais curtidos para as posições
+        function classificarEMoverLinksMaisCurtidos() {
+            const linksRef = database.ref("links");
+    
+            linksRef
+                .orderByChild("curtidas") // Classifique pelos links mais curtidos
+                .limitToLast(3) // Pegue os 3 links mais curtidos
+                .once("value")
+                .then((snapshot) => {
+                    // Obtém os links mais curtidos
+                    const linksMaisCurtidos = [];
+    
+                    snapshot.forEach((linkSnapshot) => {
+                        linksMaisCurtidos.push({
+                            key: linkSnapshot.key,
+                            linkData: linkSnapshot.val(),
+                        });
+                    });
+    
+                    // Remove os links mais curtidos da lista original
+                    linksMaisCurtidos.forEach((link) => {
+                        linksRef.child(link.key).remove();
+                    });
+    
+                    // Adiciona os links mais curtidos à seção de posições
+                    adicionarLinksMaisCurtidosAoTopo(linksMaisCurtidos);
+                });
+        }
+    
+        // Função para adicionar os links mais curtidos à seção de posições
+        function adicionarLinksMaisCurtidosAoTopo(linksMaisCurtidos) {
+            const topLinks = database.ref("topLinks");
+    
+            linksMaisCurtidos.forEach((link) => {
+                // Adicione os links mais curtidos à seção de posições (1º, 2º, 3º lugar)
+                topLinks.push(link.linkData);
+            });
+        }
+    
+        // ...
+    
     </script>
+    
 </body>
+</html>
