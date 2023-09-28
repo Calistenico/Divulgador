@@ -231,7 +231,6 @@
      appId: "1:633655897119:web:01af240d759bec0e18b92a",
     measurementId: "G-5K9YGDBFNK"
   };
-        
 
         // Inicialize o Firebase
         firebase.initializeApp(firebaseConfig);
@@ -239,13 +238,48 @@
         // Referência ao banco de dados
         var database = firebase.database();
 
+        // Variável para armazenar a quantidade de pontos do usuário
+        var userPoints = 20; // Defina a carteira com 20 pontos iniciais
+
+        // Atualize a exibição da carteira de pontos
+        function updatePointsDisplay() {
+            var userPointsElement = document.getElementById('user-points');
+            userPointsElement.textContent = 'Pontos: ' + userPoints;
+        }
+
+        // Deduza 2 pontos da carteira quando um link for compartilhado
+        function deductPoints() {
+            userPoints -= 2; // Deduz 2 pontos da carteira
+            updatePointsDisplay(); // Atualiza a exibição da carteira de pontos
+        }
+
+        // Função para verificar se um link já foi compartilhado
+        function isLinkShared(link) {
+            var sharedLinksRef = database.ref('sharedLinks');
+            return sharedLinksRef.once('value').then(function(snapshot) {
+                var links = snapshot.val();
+                if (links) {
+                    return Object.values(links).includes(link);
+                }
+                return false;
+            });
+        }
+
         // Função para adicionar conteúdo compartilhado
         function addSharedContent(content) {
-            // Gere uma chave única para cada link compartilhado
-            var newContentKey = database.ref('sharedLinks').push().key;
-            var updates = {};
-            updates['/sharedLinks/' + newContentKey] = content;
-            return database.ref().update(updates);
+            // Verifica se o link já foi compartilhado
+            isLinkShared(content).then(function(alreadyShared) {
+                if (!alreadyShared) {
+                    // Gere uma chave única para cada link compartilhado
+                    var newContentKey = database.ref('sharedLinks').push().key;
+                    var updates = {};
+                    updates['/sharedLinks/' + newContentKey] = content;
+                    database.ref().update(updates);
+                    deductPoints(); // Deduz 2 pontos da carteira
+                } else {
+                    alert('Este link já foi compartilhado anteriormente.');
+                }
+            });
         }
 
         // Função para atualizar a exibição dos links compartilhados
@@ -280,14 +314,32 @@
             e.preventDefault(); // Impede o envio padrão do formulário
 
             var linkPostagem = document.getElementById('linkPostagem').value;
-            if (linkPostagem) {
+            if (linkPostagem && userPoints >= 2) { // Verifica se o usuário tem pelo menos 2 pontos para compartilhar
                 addSharedContent(linkPostagem).then(function () {
                     document.getElementById('linkPostagem').value = ''; // Limpa o campo após o compartilhamento
                 });
+            } else {
+                alert('Você não tem pontos suficientes para compartilhar ou o link já foi compartilhado.');
             }
         });
 
+        // Atualize o estado do botão de compartilhamento com base nos pontos disponíveis
+        function updateShareButtonState() {
+            var linkPostagem = document.getElementById('linkPostagem');
+            var shareButton = document.querySelector('#postForm button[type="submit"]');
+            
+            if (userPoints < 2 || !linkPostagem.value) {
+                shareButton.disabled = true;
+            } else {
+                shareButton.disabled = false;
+            }
+        }
+
         // Inicialize a atualização dos links compartilhados
         updateSharedFeed();
+
+        // Atualize a exibição dos pontos e o estado do botão de compartilhamento
+        updatePointsDisplay();
+        updateShareButtonState();
     </script>
 </body>
