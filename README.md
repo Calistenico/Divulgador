@@ -5,6 +5,8 @@
     <title>Divulgador de Rede Social</title>
     <!-- Inclua o link para a fonte Pacifico -->
     <link href="https://fonts.googleapis.com/css?family=Pacifico&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
     <style>
         /* Estilos para o aplicativo */
         body {
@@ -49,7 +51,7 @@
         .content-box {
             width: 100%;
             max-width: 400px;
-            background-color: rgba(51, 44, 44, 0.9);
+            background-color: rgba(94, 89, 89, 0.9);
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
@@ -59,7 +61,7 @@
         .content-box h2 {
             text-align: center;
             margin-bottom: 10px;
-            background-color: rgba(51, 44, 44, 0.9);
+            background-color: rgba(117, 113, 113, 0.815);
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
 
@@ -70,7 +72,7 @@
         }
 
         .copy {
-            background-color: #434446;
+            background-color: #332f2fe1;
             color: white;
             padding: 10px;
             border-radius: 5px;
@@ -168,6 +170,7 @@
     </style>
 </head>
 <body>
+    
     <header>
         <h1>Divulgador De Rede Social</h1>
         <button id="loginButton">Entrar</button>
@@ -216,14 +219,38 @@
         &copy; 2023 Criado com o propósito de uma divulgação orgânica de perfil de Rede Social
     </footer>
 
-    <script>
-        // Variável para armazenar os links compartilhados
-        let sharedLinksInFeed = [];
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-analytics.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+          apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
+          authDomain: "divulgador-c580f.firebaseapp.com",
+          databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
+          projectId: "divulgador-c580f",
+          storageBucket: "divulgador-c580f.appspot.com",
+          messagingSenderId: "633655897119",
+          appId: "1:633655897119:web:01af240d759bec0e18b92a",
+          measurementId: "G-5K9YGDBFNK"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+   
 
         // Função para adicionar conteúdo compartilhado
         function addSharedContent(content) {
-            sharedLinksInFeed.push(content);
-            updateSharedFeed(); // Atualiza a exibição dos links compartilhados
+            // Gere uma chave única para cada link compartilhado
+            const newContentKey = database.ref('sharedLinks').push().key;
+            const updates = {};
+            updates['/sharedLinks/' + newContentKey] = content;
+            return database.ref().update(updates);
         }
 
         // Função para atualizar a exibição dos links compartilhados
@@ -231,7 +258,10 @@
             const sharedContent = document.getElementById('sharedContent');
             sharedContent.innerHTML = ''; // Limpa o conteúdo atual
 
-            sharedLinksInFeed.forEach(function (link) {
+            // Consulta os links compartilhados no banco de dados
+            const sharedLinksRef = database.ref('sharedLinks');
+            sharedLinksRef.on('child_added', function (data) {
+                const link = data.val();
                 const feedItem = document.createElement('div');
                 feedItem.className = 'postagem';
 
@@ -256,9 +286,14 @@
 
             const linkPostagem = document.getElementById('linkPostagem').value;
             if (linkPostagem) {
-                addSharedContent(linkPostagem);
-                document.getElementById('linkPostagem').value = ''; // Limpa o campo após o compartilhamento
+                addSharedContent(linkPostagem).then(function () {
+                    document.getElementById('linkPostagem').value = ''; // Limpa o campo após o compartilhamento
+                });
             }
         });
+
+        // Inicialize a atualização dos links compartilhados
+        updateSharedFeed();
     </script>
 </body>
+
