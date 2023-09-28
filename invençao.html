@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -208,8 +207,6 @@
     </style>
 </head>
 <body>
-    
-  
     <main>
         <section id="points-wallet">
             <h2>Carteira de Pontos</h2>
@@ -217,7 +214,7 @@
         </section>
         <section id="profile-link-box" class="content-box">
             <p class="copy">
-               Aqui está o melhor: ganhe pontos a cada ação! 😲<br>
+                Aqui está o melhor: ganhe pontos a cada ação! 😲<br>
                 1 ponto por cada curtida 💖<br>
                 1 ponto por cada comentário 🗨️<br>
                 E o que você pode fazer com esses pontos? 🤔<br>
@@ -261,7 +258,6 @@
                 <!-- Aqui serão exibidos os links compartilhados -->
             </div>
         </section>
-        
     </main>
 
     <footer>
@@ -302,12 +298,6 @@
                 });
             }
         }
-        // Evitar que o formulário recarregue a página ao ser enviado
-document.getElementById("postForm").addEventListener("submit", function (event) {
-    event.preventDefault(); // Evita a submissão padrão do formulário
-    compartilharLink(event);
-});
-
     
         // Função para classificar e mover os links mais curtidos para as posições
         function classificarEMoverLinksMaisCurtidos() {
@@ -348,9 +338,13 @@ document.getElementById("postForm").addEventListener("submit", function (event) 
             });
         }
     
+        // Evitar que o formulário recarregue a página ao ser enviado
+        document.getElementById("postForm").addEventListener("submit", function (event) {
+            event.preventDefault(); // Evita a submissão padrão do formulário
+            compartilharLink(event);
+        });
+    
         // ...
     
     </script>
-    
 </body>
-</html>
