@@ -268,7 +268,7 @@
         // Função para adicionar conteúdo compartilhado
         function addSharedContent(content) {
             // Verifica se o link já foi compartilhado
-            isLinkShared(content).then(function(alreadyShared) {
+            return isLinkShared(content).then(function(alreadyShared) {
                 if (!alreadyShared) {
                     // Gere uma chave única para cada link compartilhado
                     var newContentKey = database.ref('sharedLinks').push().key;
@@ -289,22 +289,24 @@
 
             // Consulta os links compartilhados no banco de dados
             var sharedLinksRef = database.ref('sharedLinks');
-            sharedLinksRef.on('child_added', function (data) {
-                var link = data.val();
-                var feedItem = document.createElement('div');
-                feedItem.className = 'postagem';
+            sharedLinksRef.once('value').then(function(snapshot) {
+                snapshot.forEach(function(childSnapshot) {
+                    var link = childSnapshot.val();
+                    var feedItem = document.createElement('div');
+                    feedItem.className = 'postagem';
 
-                // Botão "Acesso ao Link"
-                var openLinkButton = document.createElement('button');
-                openLinkButton.textContent = 'Acesso ao Link';
-                openLinkButton.addEventListener('click', function () {
-                    window.open(link, '_blank'); // Abre o link em uma nova guia
+                    // Botão "Acesso ao Link"
+                    var openLinkButton = document.createElement('button');
+                    openLinkButton.textContent = 'Acesso ao Link';
+                    openLinkButton.addEventListener('click', function () {
+                        window.open(link, '_blank'); // Abre o link em uma nova guia
+                    });
+
+                    feedItem.appendChild(openLinkButton);
+                    feedItem.style.marginBottom = '10px'; // Adicione uma margem inferior de 10px entre os botões
+
+                    sharedContent.appendChild(feedItem);
                 });
-
-                feedItem.appendChild(openLinkButton);
-                feedItem.style.marginBottom = '10px'; // Adicione uma margem inferior de 10px entre os botões
-
-                sharedContent.appendChild(feedItem);
             });
         }
 
