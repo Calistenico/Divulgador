@@ -48,7 +48,6 @@
             padding: 20px;
         }
 
-        
         /* Estilos para a caixa de compartilhamento de link do perfil */
         .content-box {
             width: 100%;
@@ -184,8 +183,6 @@
     
     <header>
         <h1>Divulgador De Rede Social</h1>
- 
-
     </header>
     
     <main>
@@ -244,5 +241,175 @@
         &copy; 2023 Criado com o propósito de uma divulgação orgânica de perfil de Rede Social
     </footer>
 
+    <script>
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
+            authDomain: "divulgador-c580f.firebaseapp.com",
+            databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
+            projectId: "divulgador-c580f",
+            storageBucket: "divulgador-c580f.appspot.com",
+            messagingSenderId: "633655897119",
+            appId: "1:633655897119:web:01af240d759bec0e18b92a",
+            measurementId: "G-5K9YGDBFNK"
+           };
 
+        // Inicialize o Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Referências ao banco de dados e autenticação
+        const database = firebase.database();
+        const auth = firebase.auth();
+
+        // Variável para armazenar a quantidade de pontos do usuário
+        let userPoints = 20; // Defina a carteira com 20 pontos iniciais
+
+        // Atualize a exibição da carteira de pontos
+        function updatePointsDisplay() {
+            const userPointsElement = document.getElementById('user-points');
+            userPointsElement.textContent = 'Pontos: ' + userPoints;
+        }
+
+        // Deduza 2 pontos da carteira quando um link for compartilhado
+        function deductPoints() {
+            userPoints -= 2; // Deduz 2 pontos da carteira
+            updatePointsDisplay(); // Atualiza a exibição da carteira de pontos
+        }
+
+        // Função para verificar se um link já foi compartilhado
+        function isLinkShared(link) {
+            const sharedLinksRef = database.ref('sharedLinks');
+            return sharedLinksRef.once('value').then(function(snapshot) {
+                const links = snapshot.val();
+                if (links) {
+                    return Object.values(links).includes(link);
+                }
+                return false;
+            });
+        }
+
+        // Função para adicionar conteúdo compartilhado
+        function addSharedContent(content) {
+            // Verifica se o link já foi compartilhado
+            return isLinkShared(content).then(function(alreadyShared) {
+                if (!alreadyShared) {
+                    // Gere uma chave única para cada link compartilhado
+                    const newContentKey = database.ref('sharedLinks').push().key;
+                    const updates = {};
+                    updates['/sharedLinks/' + newContentKey] = content;
+                    database.ref().update(updates);
+                    deductPoints(); // Deduz 2 pontos da carteira
+                } else {
+                    alert('Este link já foi compartilhado anteriormente.');
+                }
+            });
+        }
+
+        // Função para curtir um link compartilhado
+        function likeSharedLink(linkKey) {
+            // Aqui você pode adicionar a lógica para curtir o link compartilhado
+            // Por exemplo, você pode atualizar o banco de dados para registrar a curtida
+            // e adicionar lógica para controlar se um usuário pode curtir novamente ou não.
+            
+            // Exemplo de atualização do banco de dados:
+            const sharedLinksRef = database.ref('sharedLinks');
+            sharedLinksRef.child(linkKey).update({ likes: firebase.database.ServerValue.increment(1) });
+        }
+
+        // Função para atualizar a exibição dos links compartilhados
+        function updateSharedFeed() {
+            const sharedContent = document.getElementById('sharedContent');
+            sharedContent.innerHTML = ''; // Limpa o conteúdo atual
+
+            // Consulta os links compartilhados no banco de dados
+            const sharedLinksRef = database.ref('sharedLinks');
+            sharedLinksRef.on('child_added', function (data) {
+                const linkKey = data.key;
+                const link = data.val();
+                const feedItem = document.createElement('div');
+                feedItem.className = 'postagem';
+
+                // Botão "Acesso ao Link"
+                const openLinkButton = document.createElement('button');
+                openLinkButton.textContent = 'Acesso ao Link';
+                openLinkButton.addEventListener('click', function () {
+                    window.open(link, '_blank'); // Abre o link em uma nova guia
+                });
+
+                // Botão "Curtir"
+                const likeButton = document.createElement('button');
+                likeButton.textContent = 'Curtir';
+                likeButton.addEventListener('click', function () {
+                    likeSharedLink(linkKey);
+                });
+
+                feedItem.appendChild(openLinkButton);
+                feedItem.appendChild(likeButton);
+                feedItem.style.marginBottom = '10px'; // Adicione uma margem inferior de 10px entre os botões
+
+                sharedContent.appendChild(feedItem);
+            });
+        }
+
+        // Função para processar o formulário de compartilhamento de perfil
+        const postForm = document.getElementById('postForm');
+        postForm.addEventListener('submit', function (e) {
+            e.preventDefault(); // Impede o envio padrão do formulário
+
+            const linkPostagem = document.getElementById('linkPostagem').value;
+            if (linkPostagem && userPoints >= 2) { // Verifica se o usuário tem pelo menos 2 pontos para compartilhar
+                addSharedContent(linkPostagem).then(function () {
+                    document.getElementById('linkPostagem').value = ''; // Limpa o campo após o compartilhamento
+                });
+            } else {
+                alert('Você não tem pontos suficientes para compartilhar ou o link já foi compartilhado.');
+            }
+        });
+
+        // Atualize o estado do botão de compartilhamento com base nos pontos disponíveis
+        function updateShareButtonState() {
+            const linkPostagem = document.getElementById('linkPostagem');
+            const shareButton = document.querySelector('#postForm button[type="submit"]');
+            
+            if (userPoints < 2 || !linkPostagem.value) {
+                shareButton.disabled = true;
+            } else {
+                shareButton.disabled = false;
+            }
+        }
+
+        // Inicialize a atualização dos links compartilhados
+        updateSharedFeed();
+
+        // Atualize a exibição dos pontos e o estado do botão de compartilhamento
+        updatePointsDisplay();
+        updateShareButtonState();
+
+        // Função para processar o formulário de entrada
+        const entryForm = document.getElementById('entryForm');
+        entryForm.addEventListener('submit', function (e) {
+            e.preventDefault(); // Impede o envio padrão do formulário
+        
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('email').value;
+        
+            // Verifica se o nome e o email foram fornecidos
+            if (nome && email) {
+                // Adicione o nome e o email do usuário ao Firestore
+                db.collection("usuarios").add({
+                    nome: nome,
+                    email: email,
+                }).then(function (docRef) {
+                    console.log("Usuário registrado com ID: ", docRef.id);
+                    // Redirecione o usuário para a página principal após o registro
+                    window.location.href = "index.html"; // Substitua "index.html" pelo nome do arquivo da sua página principal
+                }).catch(function (error) {
+                    console.error("Erro ao registrar usuário: ", error);
+                });
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        });
+    </script>
 </body>
