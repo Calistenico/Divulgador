@@ -307,15 +307,40 @@
         }
 
         // Função para curtir um link compartilhado
-        function likeSharedLink(linkKey) {
-            // Aqui você pode adicionar a lógica para curtir o link compartilhado
-            // Por exemplo, você pode atualizar o banco de dados para registrar a curtida
-            // e adicionar lógica para controlar se um usuário pode curtir novamente ou não.
-            
-            // Exemplo de atualização do banco de dados:
-            const sharedLinksRef = database.ref('sharedLinks');
-            sharedLinksRef.child(linkKey).update({ likes: firebase.database.ServerValue.increment(1) });
+function likeSharedLink(linkKey) {
+    // Referência ao link compartilhado no banco de dados
+    const sharedLinksRef = database.ref('sharedLinks').child(linkKey);
+
+    // Consulta o banco de dados para obter informações sobre o link
+    sharedLinksRef.once('value').then(function(snapshot) {
+        const linkData = snapshot.val();
+
+        if (linkData) {
+            // Verifica se o usuário já curtiu o link (você pode implementar sua própria lógica aqui)
+            const currentUserLiked = linkData.likes && linkData.likes.hasOwnProperty(auth.currentUser.uid);
+
+            if (!currentUserLiked) {
+                // Atualiza o banco de dados para registrar a curtida do usuário atual
+                sharedLinksRef.child('likes').child(auth.currentUser.uid).set(true);
+
+                // Incrementa o contador de curtidas
+                sharedLinksRef.child('likeCount').transaction(function(likeCount) {
+                    return (likeCount || 0) + 1;
+                });
+
+                // Atualiza a interface do usuário para refletir a curtida
+                updateSharedFeed(); // Isso atualiza a lista de links compartilhados na interface do usuário
+            } else {
+                alert('Você já curtiu este link.');
+            }
+        } else {
+            alert('Link não encontrado.');
         }
+    }).catch(function(error) {
+        console.error("Erro ao curtir link compartilhado: ", error);
+    });
+}
+
 
         // Função para atualizar a exibição dos links compartilhados
         function updateSharedFeed() {
@@ -403,7 +428,7 @@
                 }).then(function (docRef) {
                     console.log("Usuário registrado com ID: ", docRef.id);
                     // Redirecione o usuário para a página principal após o registro
-                    window.location.href = "index.html"; // Substitua "index.html" pelo nome do arquivo da sua página principal
+                    window.location.href = "invençao.html"; // Substitua "index.html" pelo nome do arquivo da sua página principal
                 }).catch(function (error) {
                     console.error("Erro ao registrar usuário: ", error);
                 });
