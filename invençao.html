@@ -221,16 +221,16 @@
     <main>
         <section id="points-wallet">
             <h2>Carteira de Pontos</h2>
-            <p id="user-points">Pontos: 20</p>
+            <p id="user-points">Pontos: 10</p>
         </section>
 
         <section id="loginForm" class="content-box">
             <h2>Login</h2>
-            <form id="loginForm">
+            <form id="loginUserForm">
                 <label for="email">Email:</label>
-                <input type="text" id="email" required>
+                <input type="text" id="loginEmail" required>
                 <label for="password">Senha:</label>
-                <input type="password" id="password" required>
+                <input type="password" id="loginPassword" required>
                 <button type="submit">Entrar</button>
                 <p>Ainda não tem uma conta? <a href="#" id="createAccountLink">Crie uma conta</a></p>
             </form>
@@ -274,7 +274,6 @@
         &copy; 2023 Criado com o propósito de uma divulgação orgânica de perfil de Rede Social
     </footer>
 
-
     <script>
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
      const firebaseConfig = {
@@ -288,7 +287,6 @@
     measurementId: "G-5K9YGDBFNK"
   };
 
-        // Inicialize o Firebase
         firebase.initializeApp(firebaseConfig);
 
         // Referência ao banco de dados
@@ -316,19 +314,19 @@
         });
 
         // Função para fazer login
-        var loginForm = document.getElementById('loginForm');
-        var emailInput = document.getElementById('email');
-        var passwordInput = document.getElementById('password');
+        var loginUserForm = document.getElementById('loginUserForm');
+        var loginEmailInput = document.getElementById('loginEmail');
+        var loginPasswordInput = document.getElementById('loginPassword');
 
-        loginForm.addEventListener('submit', function(e) {
+        loginUserForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            var email = emailInput.value;
-            var password = passwordInput.value;
+            var email = loginEmailInput.value;
+            var password = loginPasswordInput.value;
 
             auth.signInWithEmailAndPassword(email, password).then(function() {
                 // Login bem-sucedido
-                loginForm.reset();
+                loginUserForm.reset();
             }).catch(function(error) {
                 alert('Erro no login: ' + error.message);
             });
@@ -384,4 +382,54 @@
             });
         }
 
-       
+        // Função para compartilhar um link
+        var postForm = document.getElementById('postForm');
+        var linkPostagemInput = document.getElementById('linkPostagem');
+
+        postForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var link = linkPostagemInput.value;
+
+            isLinkShared(link).then(function(alreadyShared) {
+                if (!alreadyShared) {
+                    // O link ainda não foi compartilhado, portanto, podemos compartilhá-lo
+                    deductPoints(); // Deduz pontos
+                    // Atualiza os pontos no banco de dados
+                    var userId = auth.currentUser.uid;
+                    database.ref('userPoints/' + userId).set(userPoints);
+                    // Adiciona o link compartilhado ao banco de dados
+                    database.ref('sharedLinks').push(link);
+                    // Atualiza a exibição dos links compartilhados
+                    updateSharedFeed();
+                    linkPostagemInput.value = ''; // Limpa o campo de entrada
+                } else {
+                    alert('Este link já foi compartilhado.');
+                }
+            });
+        });
+
+        // Função para atualizar a exibição dos links compartilhados
+        function updateSharedFeed() {
+            var sharedContentElement = document.getElementById('sharedContent');
+            sharedContentElement.innerHTML = ''; // Limpa o conteúdo existente
+
+            // Obtém os links compartilhados do banco de dados
+            var sharedLinksRef = database.ref('sharedLinks');
+            sharedLinksRef.once('value').then(function(snapshot) {
+                var links = snapshot.val();
+                if (links) {
+                    // Itera sobre os links compartilhados e os exibe
+                    Object.values(links).forEach(function(link) {
+                        var linkElement = document.createElement('div');
+                        linkElement.textContent = link;
+                        sharedContentElement.appendChild(linkElement);
+                    });
+                }
+            });
+        }
+
+        // Carrega os links compartilhados ao carregar a página
+        updateSharedFeed();
+    </script>
+</body>
