@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -294,6 +293,7 @@
             // Consulta os links compartilhados no banco de dados
             var sharedLinksRef = database.ref('sharedLinks');
             sharedLinksRef.on('child_added', function (data) {
+                var linkKey = data.key;
                 var link = data.val();
                 var feedItem = document.createElement('div');
                 feedItem.className = 'postagem';
@@ -305,7 +305,15 @@
                     window.open(link, '_blank'); // Abre o link em uma nova guia
                 });
 
+                // Botão "Curtir"
+                var likeButton = document.createElement('button');
+                likeButton.textContent = 'Curtir';
+                likeButton.addEventListener('click', function () {
+                    likeSharedLink(linkKey);
+                });
+
                 feedItem.appendChild(openLinkButton);
+                feedItem.appendChild(likeButton);
                 feedItem.style.marginBottom = '10px'; // Adicione uma margem inferior de 10px entre os botões
 
                 sharedContent.appendChild(feedItem);
@@ -352,14 +360,13 @@
             // Autenticação com o Google
             var provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).then(function(result) {
-                // O usuário fez login com sucesso
+                // O usuário fez login com sucesso, você pode adicionar lógica adicional aqui
                 var user = result.user;
-                console.log('Usuário logado:', user);
+                console.log('Login bem-sucedido:', user);
             }).catch(function(error) {
-                // Ocorreu um erro durante o login
+                // Tratar erros de login aqui
                 console.error('Erro de login:', error);
             });
         });
     </script>
 </body>
-</html>
