@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -200,6 +201,14 @@
             text-align: center;
             margin-top: 10px;
         }
+
+        /* Estilos para os botões de link com imagem */
+        .link-button img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 5px;
+        }
     </style>
 </head>
 <body>
@@ -269,19 +278,23 @@
     </footer>
 
     <script>
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+      apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
+      authDomain: "divulgador-c580f.firebaseapp.com",
+      databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
+      projectId: "divulgador-c580f",
+      storageBucket: "divulgador-c580f.appspot.com",
+      messagingSenderId: "633655897119",
+      appId: "1:633655897119:web:01af240d759bec0e18b92a",
+      measurementId: "G-5K9YGDBFNK"
+        };
 
-        <script>
-            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-         const firebaseConfig = {
-         apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
-         authDomain: "divulgador-c580f.firebaseapp.com",
-         databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
-         projectId: "divulgador-c580f",
-         storageBucket: "divulgador-c580f.appspot.com",
-         messagingSenderId: "633655897119",
-         appId: "1:633655897119:web:01af240d759bec0e18b92a",
-        measurementId: "G-5K9YGDBFNK"
-     };
+        // Inicialize o Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Referência para o banco de dados
+        const database = firebase.database();
 
         function updateSharedFeed() {
             var sharedContentElement = document.getElementById('sharedContent');
@@ -301,9 +314,20 @@
                         var linkGroupDiv = document.createElement('div');
 
                         // Cria botões para os links no grupo
-                        linkGroup.forEach(function(link) {
+                        linkGroup.forEach(function(linkObj) {
                             var linkButton = document.createElement('button');
-                            linkButton.textContent = link;
+                            var linkText = linkObj.link;
+                            var imageUrl = linkObj.imageUrl; // URL da imagem
+                            var imgElement = document.createElement('img'); // Elemento de imagem
+
+                            if (imageUrl) {
+                                imgElement.src = imageUrl; // Define a fonte da imagem
+                                imgElement.alt = linkText; // Adicione um atributo alt para acessibilidade
+                                linkButton.appendChild(imgElement); // Adicione a imagem ao botão
+                            } else {
+                                linkButton.textContent = linkText; // Se não houver imagem, use o texto do link
+                            }
+
                             linkButton.className = 'link-button';
                             linkGroupDiv.appendChild(linkButton);
                         });
@@ -318,3 +342,4 @@
         updateSharedFeed();
     </script>
 </body>
+</html>
