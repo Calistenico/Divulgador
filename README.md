@@ -285,6 +285,17 @@
             });
         }
 
+        // Função para curtir um link compartilhado
+        function likeSharedLink(linkKey) {
+            // Aqui você pode adicionar a lógica para curtir o link compartilhado
+            // Por exemplo, você pode atualizar o banco de dados para registrar a curtida
+            // e adicionar lógica para controlar se um usuário pode curtir novamente ou não.
+            
+            // Exemplo de atualização do banco de dados:
+            const sharedLinksRef = database.ref('sharedLinks');
+            sharedLinksRef.child(linkKey).update({ likes: firebase.database.ServerValue.increment(1) });
+        }
+
         // Função para atualizar a exibição dos links compartilhados
         function updateSharedFeed() {
             const sharedContent = document.getElementById('sharedContent');
