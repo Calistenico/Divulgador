@@ -6,7 +6,7 @@
     <!-- Inclua o link para a fonte Pacifico -->
     <link href="https://fonts.googleapis.com/css?family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-auth.js"></script>
     <style>
         /* Estilos para o aplicativo */
@@ -184,7 +184,7 @@
         </section>
         <section id="profile-link-box" class="content-box">
             <p class="copy">
-               Aqui está o melhor: ganhe pontos a cada ação! 😲<br>
+                Aqui está o melhor: ganhe pontos a cada ação! 😲<br>
                 1 ponto por cada curtida 💖<br>
                 1 ponto por cada comentário 🗨️<br>
                 E o que você pode fazer com esses pontos? 🤔<br>
@@ -220,33 +220,33 @@
         &copy; 2023 Criado com o propósito de uma divulgação orgânica de perfil de Rede Social
     </footer>
 
-
     <script>
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-      const firebaseConfig = {
-      apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
-      authDomain: "divulgador-c580f.firebaseapp.com",
-      databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
-      projectId: "divulgador-c580f",
-      storageBucket: "divulgador-c580f.appspot.com",
-      messagingSenderId: "633655897119",
-      appId: "1:633655897119:web:01af240d759bec0e18b92a",
-      measurementId: "G-5K9YGDBFNK"
-        };
+         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+         const firebaseConfig = {
+          apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
+          authDomain: "divulgador-c580f.firebaseapp.com",
+          databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
+          projectId: "divulgador-c580f",
+          storageBucket: "divulgador-c580f.appspot.com",
+          messagingSenderId: "633655897119",
+          appId: "1:633655897119:web:01af240d759bec0e18b92a",
+          measurementId: "G-5K9YGDBFNK"
+         };
 
         // Inicialize o Firebase
-        firebase.initializeApp(firebaseConfig);
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
         // Referências ao banco de dados e autenticação
-        var database = firebase.database();
-        var auth = firebase.auth();
+        const database = firebase.database();
+        const auth = firebase.auth();
 
         // Variável para armazenar a quantidade de pontos do usuário
-        var userPoints = 20; // Defina a carteira com 20 pontos iniciais
+        let userPoints = 20; // Defina a carteira com 20 pontos iniciais
 
         // Atualize a exibição da carteira de pontos
         function updatePointsDisplay() {
-            var userPointsElement = document.getElementById('user-points');
+            const userPointsElement = document.getElementById('user-points');
             userPointsElement.textContent = 'Pontos: ' + userPoints;
         }
 
@@ -258,9 +258,9 @@
 
         // Função para verificar se um link já foi compartilhado
         function isLinkShared(link) {
-            var sharedLinksRef = database.ref('sharedLinks');
+            const sharedLinksRef = database.ref('sharedLinks');
             return sharedLinksRef.once('value').then(function(snapshot) {
-                var links = snapshot.val();
+                const links = snapshot.val();
                 if (links) {
                     return Object.values(links).includes(link);
                 }
@@ -271,11 +271,11 @@
         // Função para adicionar conteúdo compartilhado
         function addSharedContent(content) {
             // Verifica se o link já foi compartilhado
-            isLinkShared(content).then(function(alreadyShared) {
+            return isLinkShared(content).then(function(alreadyShared) {
                 if (!alreadyShared) {
                     // Gere uma chave única para cada link compartilhado
-                    var newContentKey = database.ref('sharedLinks').push().key;
-                    var updates = {};
+                    const newContentKey = database.ref('sharedLinks').push().key;
+                    const updates = {};
                     updates['/sharedLinks/' + newContentKey] = content;
                     database.ref().update(updates);
                     deductPoints(); // Deduz 2 pontos da carteira
@@ -287,26 +287,26 @@
 
         // Função para atualizar a exibição dos links compartilhados
         function updateSharedFeed() {
-            var sharedContent = document.getElementById('sharedContent');
+            const sharedContent = document.getElementById('sharedContent');
             sharedContent.innerHTML = ''; // Limpa o conteúdo atual
 
             // Consulta os links compartilhados no banco de dados
-            var sharedLinksRef = database.ref('sharedLinks');
+            const sharedLinksRef = database.ref('sharedLinks');
             sharedLinksRef.on('child_added', function (data) {
-                var linkKey = data.key;
-                var link = data.val();
-                var feedItem = document.createElement('div');
+                const linkKey = data.key;
+                const link = data.val();
+                const feedItem = document.createElement('div');
                 feedItem.className = 'postagem';
 
                 // Botão "Acesso ao Link"
-                var openLinkButton = document.createElement('button');
+                const openLinkButton = document.createElement('button');
                 openLinkButton.textContent = 'Acesso ao Link';
                 openLinkButton.addEventListener('click', function () {
                     window.open(link, '_blank'); // Abre o link em uma nova guia
                 });
 
                 // Botão "Curtir"
-                var likeButton = document.createElement('button');
+                const likeButton = document.createElement('button');
                 likeButton.textContent = 'Curtir';
                 likeButton.addEventListener('click', function () {
                     likeSharedLink(linkKey);
@@ -321,11 +321,11 @@
         }
 
         // Função para processar o formulário de compartilhamento de perfil
-        var postForm = document.getElementById('postForm');
+        const postForm = document.getElementById('postForm');
         postForm.addEventListener('submit', function (e) {
             e.preventDefault(); // Impede o envio padrão do formulário
 
-            var linkPostagem = document.getElementById('linkPostagem').value;
+            const linkPostagem = document.getElementById('linkPostagem').value;
             if (linkPostagem && userPoints >= 2) { // Verifica se o usuário tem pelo menos 2 pontos para compartilhar
                 addSharedContent(linkPostagem).then(function () {
                     document.getElementById('linkPostagem').value = ''; // Limpa o campo após o compartilhamento
@@ -337,8 +337,8 @@
 
         // Atualize o estado do botão de compartilhamento com base nos pontos disponíveis
         function updateShareButtonState() {
-            var linkPostagem = document.getElementById('linkPostagem');
-            var shareButton = document.querySelector('#postForm button[type="submit"]');
+            const linkPostagem = document.getElementById('linkPostagem');
+            const shareButton = document.querySelector('#postForm button[type="submit"]');
             
             if (userPoints < 2 || !linkPostagem.value) {
                 shareButton.disabled = true;
@@ -355,13 +355,13 @@
         updateShareButtonState();
 
         // Adicione um ouvinte de evento para o botão de login
-        var loginButton = document.getElementById('loginButton');
+        const loginButton = document.getElementById('loginButton');
         loginButton.addEventListener('click', function() {
             // Autenticação com o Google
-            var provider = new firebase.auth.GoogleAuthProvider();
+            const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).then(function(result) {
                 // O usuário fez login com sucesso, você pode adicionar lógica adicional aqui
-                var user = result.user;
+                const user = result.user;
                 console.log('Login bem-sucedido:', user);
             }).catch(function(error) {
                 // Tratar erros de login aqui
