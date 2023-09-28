@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -180,7 +179,7 @@
     <main>
         <section id="points-wallet">
             <h2>Carteira de Pontos</h2>
-            <p id="user-points">Pontos: 10</p> <!-- Defina a carteira com 10 pontos iniciais -->
+            <p id="user-points">Pontos: 20</p>
         </section>
         <section id="profile-link-box" class="content-box">
             <p class="copy">
@@ -223,15 +222,15 @@
     <script>
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
      const firebaseConfig = {
-     apiKey: "SUA_API_KEY",
-     authDomain: "SEU_DOMÍNIO.firebaseapp.com",
-     databaseURL: "https://SEU_DOMÍNIO.firebaseio.com",
-     projectId: "SEU_PROJECT_ID",
-     storageBucket: "SEU_BUCKET.appspot.com",
-     messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-     appId: "SEU_APP_ID",
-     measurementId: "SEU_MEASUREMENT_ID"
-     };
+     apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
+     authDomain: "divulgador-c580f.firebaseapp.com",
+     databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
+     projectId: "divulgador-c580f",
+     storageBucket: "divulgador-c580f.appspot.com",
+     messagingSenderId: "633655897119",
+     appId: "1:633655897119:web:01af240d759bec0e18b92a",
+    measurementId: "G-5K9YGDBFNK"
+  };
         
 
         // Inicialize o Firebase
@@ -239,21 +238,6 @@
 
         // Referência ao banco de dados
         var database = firebase.database();
-
-        // Variável para armazenar a quantidade de pontos do usuário
-        var userPoints = 10; // Defina a carteira com 10 pontos iniciais
-
-        // Atualize a exibição da carteira de pontos
-        function updatePointsDisplay() {
-            var userPointsElement = document.getElementById('user-points');
-            userPointsElement.textContent = 'Pontos: ' + userPoints;
-        }
-
-        // Deduza 2 pontos da carteira quando um link for compartilhado
-        function deductPoints() {
-            userPoints -= 2; // Deduz 2 pontos da carteira
-            updatePointsDisplay(); // Atualiza a exibição da carteira de pontos
-        }
 
         // Função para adicionar conteúdo compartilhado
         function addSharedContent(content) {
@@ -296,31 +280,14 @@
             e.preventDefault(); // Impede o envio padrão do formulário
 
             var linkPostagem = document.getElementById('linkPostagem').value;
-            if (linkPostagem && userPoints >= 2) { // Verifica se o usuário tem pelo menos 2 pontos para compartilhar
+            if (linkPostagem) {
                 addSharedContent(linkPostagem).then(function () {
                     document.getElementById('linkPostagem').value = ''; // Limpa o campo após o compartilhamento
-                    deductPoints(); // Deduz 2 pontos da carteira
                 });
-            } else {
-                alert('Você não tem pontos suficientes para compartilhar.');
             }
         });
-
-        // Atualize o estado do botão de compartilhamento com base nos pontos do usuário
-        function updateShareButtonState() {
-            var shareButton = document.querySelector('#postForm button[type="submit"]');
-            if (userPoints < 2) {
-                shareButton.disabled = true; // Desabilita o botão se o usuário não tiver pontos suficientes
-            } else {
-                shareButton.disabled = false; // Habilita o botão se o usuário tiver pontos suficientes
-            }
-        }
-
-        // Chame a função para atualizar o estado do botão de compartilhamento
-        updateShareButtonState();
 
         // Inicialize a atualização dos links compartilhados
         updateSharedFeed();
     </script>
 </body>
-</html>
