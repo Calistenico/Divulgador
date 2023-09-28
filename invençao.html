@@ -147,23 +147,17 @@
         }
 
         /* Estilos para os botões de acesso ao conteúdo compartilhado */
-        .postagem {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .postagem button {
+        .link-button {
             background-color: #007BFF;
             color: white;
             border: none;
             border-radius: 5px;
             padding: 5px 10px;
             cursor: pointer;
+            margin: 5px;
         }
 
-        .postagem button:disabled {
+        .link-button:disabled {
             background-color: #ccc;
             cursor: not-allowed;
         }
@@ -264,8 +258,8 @@
 
         <section id="shared-content-box">
             <h2>Ganhe Pontos Curtindo e Comentando Feeds, Stories e Fotos</h2>
-            <div id="sharedContent">
-                <!-- Aqui serão exibidos os links compartilhados -->
+            <div id="sharedContent" class="shared-links">
+                <!-- Aqui serão exibidos os links compartilhados como botões -->
             </div>
         </section>
     </main>
@@ -275,156 +269,47 @@
     </footer>
 
     <script>
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-     const firebaseConfig = {
-     apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
-     authDomain: "divulgador-c580f.firebaseapp.com",
-     databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
-     projectId: "divulgador-c580f",
-     storageBucket: "divulgador-c580f.appspot.com",
-     messagingSenderId: "633655897119",
-     appId: "1:633655897119:web:01af240d759bec0e18b92a",
-    measurementId: "G-5K9YGDBFNK"
-  };
 
-        firebase.initializeApp(firebaseConfig);
+        <script>
+            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+         const firebaseConfig = {
+         apiKey: "AIzaSyDj37BRgxhz60iKLjeEMNeKbgIg85Y2Gz8",
+         authDomain: "divulgador-c580f.firebaseapp.com",
+         databaseURL: "https://divulgador-c580f-default-rtdb.firebaseio.com",
+         projectId: "divulgador-c580f",
+         storageBucket: "divulgador-c580f.appspot.com",
+         messagingSenderId: "633655897119",
+         appId: "1:633655897119:web:01af240d759bec0e18b92a",
+        measurementId: "G-5K9YGDBFNK"
+     };
 
-        // Referência ao banco de dados
-        var database = firebase.database();
-
-        // Referência à autenticação
-        var auth = firebase.auth();
-
-        // Verifica o estado de autenticação do usuário
-        auth.onAuthStateChanged(function(user) {
-            var loginForm = document.getElementById('loginForm');
-            var userDiv = document.getElementById('user-info');
-
-            if (user) {
-                // Usuário logado
-                loginForm.style.display = 'none';
-                userDiv.style.display = 'block';
-                document.getElementById('user-email').textContent = 'Logado como: ' + user.email;
-                loadUserPoints(user.uid);
-            } else {
-                // Usuário não logado
-                loginForm.style.display = 'block';
-                userDiv.style.display = 'none';
-            }
-        });
-
-        // Função para fazer login
-        var loginUserForm = document.getElementById('loginUserForm');
-        var loginEmailInput = document.getElementById('loginEmail');
-        var loginPasswordInput = document.getElementById('loginPassword');
-
-        loginUserForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            var email = loginEmailInput.value;
-            var password = loginPasswordInput.value;
-
-            auth.signInWithEmailAndPassword(email, password).then(function() {
-                // Login bem-sucedido
-                loginUserForm.reset();
-            }).catch(function(error) {
-                alert('Erro no login: ' + error.message);
-            });
-        });
-
-        // Função para fazer logout
-        var logoutButton = document.getElementById('logoutButton');
-        logoutButton.addEventListener('click', function() {
-            auth.signOut().then(function() {
-                // Logout bem-sucedido
-            }).catch(function(error) {
-                alert('Erro no logout: ' + error.message);
-            });
-        });
-
-        // Carrega os pontos do usuário a partir do banco de dados
-        function loadUserPoints(userId) {
-            var userPointsRef = database.ref('userPoints/' + userId);
-            userPointsRef.on('value', function(snapshot) {
-                var points = snapshot.val();
-                if (points !== null) {
-                    userPoints = points;
-                    updatePointsDisplay();
-                    updateShareButtonState();
-                }
-            });
-        }
-
-        // Atualize a exibição da carteira de pontos
-        function updatePointsDisplay() {
-            var userPointsElement = document.getElementById('user-points');
-            userPointsElement.textContent = 'Pontos: ' + userPoints;
-        }
-
-        // Deduza 2 pontos da carteira quando um link for compartilhado
-        function deductPoints() {
-            userPoints -= 2; // Deduz 2 pontos da carteira
-            updatePointsDisplay(); // Atualiza a exibição da carteira de pontos
-            // Atualiza os pontos no banco de dados
-            var userId = auth.currentUser.uid;
-            database.ref('userPoints/' + userId).set(userPoints);
-        }
-
-        // Função para verificar se um link já foi compartilhado
-        function isLinkShared(link) {
-            var sharedLinksRef = database.ref('sharedLinks');
-            return sharedLinksRef.once('value').then(function(snapshot) {
-                var links = snapshot.val();
-                if (links) {
-                    return Object.values(links).includes(link);
-                }
-                return false;
-            });
-        }
-
-        // Função para compartilhar um link
-        var postForm = document.getElementById('postForm');
-        var linkPostagemInput = document.getElementById('linkPostagem');
-
-        postForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            var link = linkPostagemInput.value;
-
-            isLinkShared(link).then(function(alreadyShared) {
-                if (!alreadyShared) {
-                    // O link ainda não foi compartilhado, portanto, podemos compartilhá-lo
-                    deductPoints(); // Deduz pontos
-                    // Atualiza os pontos no banco de dados
-                    var userId = auth.currentUser.uid;
-                    database.ref('userPoints/' + userId).set(userPoints);
-                    // Adiciona o link compartilhado ao banco de dados
-                    database.ref('sharedLinks').push(link);
-                    // Atualiza a exibição dos links compartilhados
-                    updateSharedFeed();
-                    linkPostagemInput.value = ''; // Limpa o campo de entrada
-                } else {
-                    alert('Este link já foi compartilhado.');
-                }
-            });
-        });
-
-        // Função para atualizar a exibição dos links compartilhados
         function updateSharedFeed() {
             var sharedContentElement = document.getElementById('sharedContent');
-            sharedContentElement.innerHTML = ''; // Limpa o conteúdo existente
 
             // Obtém os links compartilhados do banco de dados
             var sharedLinksRef = database.ref('sharedLinks');
             sharedLinksRef.once('value').then(function(snapshot) {
                 var links = snapshot.val();
                 if (links) {
-                    // Itera sobre os links compartilhados e os exibe
-                    Object.values(links).forEach(function(link) {
-                        var linkElement = document.createElement('div');
-                        linkElement.textContent = link;
-                        sharedContentElement.appendChild(linkElement);
-                    });
+                    sharedContentElement.innerHTML = ''; // Limpa o conteúdo existente
+
+                    var linksArray = Object.values(links);
+
+                    // Divide os links em grupos de 8
+                    for (var i = 0; i < linksArray.length; i += 8) {
+                        var linkGroup = linksArray.slice(i, i + 8);
+                        var linkGroupDiv = document.createElement('div');
+
+                        // Cria botões para os links no grupo
+                        linkGroup.forEach(function(link) {
+                            var linkButton = document.createElement('button');
+                            linkButton.textContent = link;
+                            linkButton.className = 'link-button';
+                            linkGroupDiv.appendChild(linkButton);
+                        });
+
+                        sharedContentElement.appendChild(linkGroupDiv);
+                    }
                 }
             });
         }
