@@ -3,9 +3,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Divulgador de Rede Social</title>
-    <!-- Inclua o link para a fonte Pacifico -->
     <link href="https://fonts.googleapis.com/css?family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
     <style>
         /* Estilos para o aplicativo */
@@ -167,13 +167,55 @@
             background-color: #ccc;
             cursor: not-allowed;
         }
+
+        /* Estilos para o formulário de login */
+        #loginForm {
+            width: 100%;
+            max-width: 400px;
+            background-color: rgba(94, 89, 89, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #loginForm label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        #loginForm input[type="text"], #loginForm input[type="password"] {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #loginForm button[type="submit"] {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        #loginForm p {
+            text-align: center;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     
     <header>
         <h1>Divulgador De Rede Social</h1>
-        <button id="loginButton">Entrar</button>
+        <div id="user-info">
+            <span id="user-email"></span>
+            <button id="logoutButton">Sair</button>
+        </div>
     </header>
     
     <main>
@@ -181,6 +223,19 @@
             <h2>Carteira de Pontos</h2>
             <p id="user-points">Pontos: 20</p>
         </section>
+
+        <section id="loginForm" class="content-box">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <label for="email">Email:</label>
+                <input type="text" id="email" required>
+                <label for="password">Senha:</label>
+                <input type="password" id="password" required>
+                <button type="submit">Entrar</button>
+                <p>Ainda não tem uma conta? <a href="#" id="createAccountLink">Crie uma conta</a></p>
+            </form>
+        </section>
+
         <section id="profile-link-box" class="content-box">
             <p class="copy">
                Aqui está o melhor: ganhe pontos a cada ação! 😲<br>
@@ -219,6 +274,7 @@
         &copy; 2023 Criado com o propósito de uma divulgação orgânica de perfil de Rede Social
     </footer>
 
+
     <script>
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
      const firebaseConfig = {
@@ -238,8 +294,68 @@
         // Referência ao banco de dados
         var database = firebase.database();
 
-        // Variável para armazenar a quantidade de pontos do usuário
-        var userPoints = 20; // Defina a carteira com 20 pontos iniciais
+        // Referência à autenticação
+        var auth = firebase.auth();
+
+        // Verifica o estado de autenticação do usuário
+        auth.onAuthStateChanged(function(user) {
+            var loginForm = document.getElementById('loginForm');
+            var userDiv = document.getElementById('user-info');
+
+            if (user) {
+                // Usuário logado
+                loginForm.style.display = 'none';
+                userDiv.style.display = 'block';
+                document.getElementById('user-email').textContent = 'Logado como: ' + user.email;
+                loadUserPoints(user.uid);
+            } else {
+                // Usuário não logado
+                loginForm.style.display = 'block';
+                userDiv.style.display = 'none';
+            }
+        });
+
+        // Função para fazer login
+        var loginForm = document.getElementById('loginForm');
+        var emailInput = document.getElementById('email');
+        var passwordInput = document.getElementById('password');
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var email = emailInput.value;
+            var password = passwordInput.value;
+
+            auth.signInWithEmailAndPassword(email, password).then(function() {
+                // Login bem-sucedido
+                loginForm.reset();
+            }).catch(function(error) {
+                alert('Erro no login: ' + error.message);
+            });
+        });
+
+        // Função para fazer logout
+        var logoutButton = document.getElementById('logoutButton');
+        logoutButton.addEventListener('click', function() {
+            auth.signOut().then(function() {
+                // Logout bem-sucedido
+            }).catch(function(error) {
+                alert('Erro no logout: ' + error.message);
+            });
+        });
+
+        // Carrega os pontos do usuário a partir do banco de dados
+        function loadUserPoints(userId) {
+            var userPointsRef = database.ref('userPoints/' + userId);
+            userPointsRef.on('value', function(snapshot) {
+                var points = snapshot.val();
+                if (points !== null) {
+                    userPoints = points;
+                    updatePointsDisplay();
+                    updateShareButtonState();
+                }
+            });
+        }
 
         // Atualize a exibição da carteira de pontos
         function updatePointsDisplay() {
@@ -251,6 +367,9 @@
         function deductPoints() {
             userPoints -= 2; // Deduz 2 pontos da carteira
             updatePointsDisplay(); // Atualiza a exibição da carteira de pontos
+            // Atualiza os pontos no banco de dados
+            var userId = auth.currentUser.uid;
+            database.ref('userPoints/' + userId).set(userPoints);
         }
 
         // Função para verificar se um link já foi compartilhado
@@ -265,83 +384,4 @@
             });
         }
 
-        // Função para adicionar conteúdo compartilhado
-        function addSharedContent(content) {
-            // Verifica se o link já foi compartilhado
-            return isLinkShared(content).then(function(alreadyShared) {
-                if (!alreadyShared) {
-                    // Gere uma chave única para cada link compartilhado
-                    var newContentKey = database.ref('sharedLinks').push().key;
-                    var updates = {};
-                    updates['/sharedLinks/' + newContentKey] = content;
-                    database.ref().update(updates);
-                    deductPoints(); // Deduz 2 pontos da carteira
-                } else {
-                    alert('Este link já foi compartilhado anteriormente.');
-                }
-            });
-        }
-
-        // Função para atualizar a exibição dos links compartilhados
-        function updateSharedFeed() {
-            var sharedContent = document.getElementById('sharedContent');
-            sharedContent.innerHTML = ''; // Limpa o conteúdo atual
-
-            // Consulta os links compartilhados no banco de dados
-            var sharedLinksRef = database.ref('sharedLinks');
-            sharedLinksRef.once('value').then(function(snapshot) {
-                snapshot.forEach(function(childSnapshot) {
-                    var link = childSnapshot.val();
-                    var feedItem = document.createElement('div');
-                    feedItem.className = 'postagem';
-
-                    // Botão "Acesso ao Link"
-                    var openLinkButton = document.createElement('button');
-                    openLinkButton.textContent = 'Acesso ao Link';
-                    openLinkButton.addEventListener('click', function () {
-                        window.open(link, '_blank'); // Abre o link em uma nova guia
-                    });
-
-                    feedItem.appendChild(openLinkButton);
-                    feedItem.style.marginBottom = '10px'; // Adicione uma margem inferior de 10px entre os botões
-
-                    sharedContent.appendChild(feedItem);
-                });
-            });
-        }
-
-        // Função para processar o formulário de compartilhamento de perfil
-        var postForm = document.getElementById('postForm');
-        postForm.addEventListener('submit', function (e) {
-            e.preventDefault(); // Impede o envio padrão do formulário
-
-            var linkPostagem = document.getElementById('linkPostagem').value;
-            if (linkPostagem && userPoints >= 2) { // Verifica se o usuário tem pelo menos 2 pontos para compartilhar
-                addSharedContent(linkPostagem).then(function () {
-                    document.getElementById('linkPostagem').value = ''; // Limpa o campo após o compartilhamento
-                });
-            } else {
-                alert('Você não tem pontos suficientes para compartilhar ou o link já foi compartilhado.');
-            }
-        });
-
-        // Atualize o estado do botão de compartilhamento com base nos pontos disponíveis
-        function updateShareButtonState() {
-            var linkPostagem = document.getElementById('linkPostagem');
-            var shareButton = document.querySelector('#postForm button[type="submit"]');
-            
-            if (userPoints < 2 || !linkPostagem.value) {
-                shareButton.disabled = true;
-            } else {
-                shareButton.disabled = false;
-            }
-        }
-
-        // Inicialize a atualização dos links compartilhados
-        updateSharedFeed();
-
-        // Atualize a exibição dos pontos e o estado do botão de compartilhamento
-        updatePointsDisplay();
-        updateShareButtonState();
-    </script>
-</body>
+       
